@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guess that Emote</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #212529;
+      color: white;
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+      position: relative;
+      /* Remove display: flex and related flex properties */
+    }
+    h1 {
+      letter-spacing: 3px;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      text-align: center;
+      width: 100%;
+      display: block;
+      justify-content: center;
+      align-items: center;
+    }
+    #image-container {
+      position: relative;
+      max-width: 900px;
+      width: 100%;
+      border: none;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      background: #212529;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #guess-image {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      user-select: none;
+      margin: 0 auto;
+    }
+    #guess-container {
+      display: flex;
+      flex-direction: row; /* Row so button is next to input */
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+    }
+    .input-box {
+      background: #343a40;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.5rem;
+      min-width: 100px;
+      padding: 0 0.75rem 0 1rem;
+      user-select: none;
+      height: 56px;
+      position: relative;
+    }
+    .input-box input[type="number"] {
+      background: transparent;
+      border: none;
+      color: white;
+      font-weight: bold;
+      font-size: 1.5rem;
+      width: 60px;
+      text-align: center;
+      padding: 0.3rem 0;
+      margin-right: 8px;
+      outline-offset: 0;
+    }
+    .input-box input[type="number"]:focus {
+      outline: 2px solid #0d6efd;
+      outline-offset: 0;
+      border-radius: 4px;
+    }
+    /* Remove default arrows on number inputs */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none;
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+    /* Arrows container on right side */
+    .arrows {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      user-select: none;
+      border-radius: 0 8px 8px 0;
+      overflow: hidden;
+      border-left: 1.5px solid #495057;
+      margin-left: auto;
+      width: 32px;
+      background: #3c4045;
+    }
+    /* Each arrow button is half of arrows container height */
+    .arrow-btn {
+      background: #495057;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 18px;
+      width: 100%;
+      height: 50%;
+      line-height: 1;
+      padding: 0;
+      text-align: center;
+      transition: background 0.2s ease;
+      user-select: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    /* Different shade on hover */
+    .arrow-btn:hover {
+      background: #6c757d;
+    }
+    .arrow-btn:active {
+      background: #343a40;
+    }
+    #submit-btn {
+      background-color: #0d6efd;
+      color: white;
+      font-weight: bold;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      font-size: 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      height: 56px;
+      align-self: stretch;
+      margin-left: 0.5rem;
+      flex-shrink: 0;
+      transition: background-color 0.2s ease;
+    }
+    #submit-btn:hover {
+      background-color: #0b5ed7;
+    }
+    #guess-list {
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .guess-entry {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      margin-left: auto;
+      margin-right: auto;
+      width: auto;
+    }
+    .guess-entry .guess-box {
+      flex-shrink: 0;
+      background: #343a40;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: white;
+      min-width: 60px;
+      text-align: center;
+      white-space: nowrap;
+      font-family: Arial, sans-serif;
+      margin-left: auto;
+      margin-right: auto;
+      box-sizing: border-box;
+      width: 320px; /* Force same width for correct and incorrect boxes */
+      display: block;
+    }
+    .guess-box.correct {
+      background-color: #198754; /* green */
+    }
+    .guess-box.close {
+      background-color: #ffc107; /* yellow */
+      color: white;
+    }
+    .guess-box.incorrect {
+      background-color: #dc3545; /* red */
+    }
+    #result-message {
+      margin-top: 1rem;
+      font-weight: bold;
+      font-size: 1.25rem;
+      color: #198754; /* green */
+      text-align: center;
+      min-height: 1.5em;
+    }
+    /* Month box style */
+    #month-box {
+      display: flex;
+      align-items: center;
+      background: #343a40;
+      border-radius: 8px;
+      min-width: 100px;
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: white;
+      padding: 0 0.5rem 0 1rem;
+      user-select: none;
+      height: 56px;
+      position: relative;
+    }
+    #month-display {
+      min-width: 50px;
+      text-align: center;
+      user-select: none;
+    }
+  </style>
+</head>
+<body style="position: relative;">
+  <div id="emote-counter"
+       style="position:fixed; left:620px; top:20px; font-size:1.5rem; color:#fff; font-weight:bold; z-index:1000;">
+    1/2
+  </div>
+  <h1>EMOTLE</h1>
+  <div style="width:700px;height:0.5px;background:rgba(255,255,255,0.2);margin:0.1rem auto 0.5rem auto;border-radius:2px;padding:0;"></div>
+  <div id="image-container" style="display: flex; justify-content: center; align-items: center;">
+    <img src="images/emotes/Clueless.png" alt="Guess the emote" id="guess-image" />
+  </div>
+
+  <div id="guess-container" aria-label="Emote guess input" style="flex-direction: row; align-items: center; gap: 1rem; justify-content: center;">
+    <input
+      id="emote-input"
+      type="text"
+      placeholder="Type your guess (emote name)"
+      style="background:#343a40;color:white;font-size:1.5rem;padding:1.25rem 1rem;border-radius:8px;border:none;width:320px;margin-right:1rem;margin-bottom:1.2rem;"
+      autocomplete="off"
+    />
+    <button id="submit-btn" type="button">Submit</button>
+  </div>
+
+  <div id="result-message" role="alert" aria-live="polite"></div>
+
+  <div id="guess-list" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    // Replace date guessing with emote name guessing
+    let guesses = [];
+
+    const emoteInput = document.getElementById("emote-input");
+    const guessList = document.getElementById("guess-list");
+    const resultMessage = document.getElementById("result-message");
+
+    function createGuessEntry(guess) {
+      const entry = document.createElement("div");
+      entry.classList.add("guess-entry");
+
+      const guessBox = document.createElement("div");
+      guessBox.classList.add("guess-box");
+      guessBox.textContent = guess;
+
+      if (guess.toLowerCase() === window.correctEmote.toLowerCase()) {
+        guessBox.classList.add("correct");
+        entry.appendChild(guessBox);
+      } else {
+        guessBox.classList.add("incorrect");
+        entry.appendChild(guessBox);
+      }
+
+      return entry;
+    }
+
+    function updateGuessList() {
+      guessList.innerHTML = "";
+      guesses.slice().reverse().forEach((g) => {
+        guessList.appendChild(createGuessEntry(g));
+      });
+    }
+
+    function handleGuess() {
+      const value = emoteInput.value.trim();
+      if (!value) {
+        alert("Please enter an emote name.");
+        return;
+      }
+
+      guesses.push(value);
+
+      updateGuessList();
+
+      if (value.toLowerCase() === window.correctEmote.toLowerCase()) {
+        showPopup(`You found the correct emote in ${guesses.length} attempts. Nice!`);
+        resultMessage.textContent = `You found the correct emote in ${guesses.length} attempts. Nice!`;
+
+        document.getElementById("submit-btn").style.display = "none";
+        nextBtn.style.display = "block";
+      } else {
+        resultMessage.textContent = "";
+      }
+      emoteInput.value = ""; // Clear input after guess
+    }
+
+    document.getElementById("submit-btn").addEventListener("click", handleGuess);
+
+    emoteInput.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        handleGuess();
+      }
+    });
+
+    // Popup window function
+    function showPopup(message) {
+      // Remove existing popup if any
+      const oldPopup = document.getElementById("win-popup");
+      if (oldPopup) oldPopup.remove();
+      const oldConfetti = document.getElementById("confetti-overlay");
+      if (oldConfetti) oldConfetti.remove();
+
+      const popup = document.createElement("div");
+      popup.id = "win-popup";
+      popup.style.position = "fixed";
+      popup.style.top = "50%";
+      popup.style.left = "50%";
+      popup.style.transform = "translate(-50%, -50%)";
+      popup.style.background = "#343a40";
+      popup.style.color = "#fff";
+      popup.style.padding = "2rem 2.5rem";
+      popup.style.borderRadius = "16px";
+      popup.style.boxShadow = "0 0 40px 10px rgba(0,0,0,0.7)";
+      popup.style.zIndex = "10001";
+      popup.style.fontSize = "1.5rem";
+      popup.style.textAlign = "center";
+      popup.style.overflow = "visible";
+      popup.innerHTML = `<div style="margin-bottom:1rem;">🎉</div>${message}<br><br><button id="close-popup" style="margin-top:1rem;background:#0d6efd;color:#fff;border:none;padding:0.5rem 1.5rem;border-radius:8px;font-size:1.1rem;cursor:pointer;">Close</button>`;
+
+      // Confetti overlay (around the box)
+      const confettiOverlay = document.createElement("canvas");
+      confettiOverlay.id = "confetti-overlay";
+      confettiOverlay.width = window.innerWidth;
+      confettiOverlay.height = window.innerHeight;
+      confettiOverlay.style.position = "fixed";
+      confettiOverlay.style.top = "0";
+      confettiOverlay.style.left = "0";
+      confettiOverlay.style.width = "100vw";
+      confettiOverlay.style.height = "100vh";
+      confettiOverlay.style.pointerEvents = "none";
+      confettiOverlay.style.zIndex = "10000";
+      document.body.appendChild(confettiOverlay);
+
+      document.body.appendChild(popup);
+
+      // Confetti effect around the box
+      function launchConfetti() {
+        const ctx = confettiOverlay.getContext("2d");
+        const confettiColors = ["#ffc107", "#0d6efd", "#198754", "#dc3545", "#fff"];
+        const confettiPieces = [];
+        const popupRect = popup.getBoundingClientRect();
+        for (let i = 0; i < 60; i++) {
+          // Start confetti around the popup box
+          const angle = Math.random() * Math.PI * 2;
+          const radius = Math.max(popupRect.width, popupRect.height) / 2 + 40;
+          const centerX = popupRect.left + popupRect.width / 2;
+          const centerY = popupRect.top + popupRect.height / 2;
+          confettiPieces.push({
+            x: centerX + Math.cos(angle) * radius,
+            y: centerY + Math.sin(angle) * radius,
+            r: Math.random() * 8 + 4,
+            color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+            speed: Math.random() * 2 + 2,
+            angle: angle,
+            vx: Math.cos(angle) * (Math.random() * 2 + 1),
+            vy: Math.sin(angle) * (Math.random() * 2 + 1)
+          });
+        }
+        let frame = 0;
+        function draw() {
+          ctx.clearRect(0, 0, confettiOverlay.width, confettiOverlay.height);
+          confettiPieces.forEach(p => {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.fill();
+            ctx.restore();
+            p.x += p.vx;
+            p.y += p.vy + p.speed * 0.5;
+          });
+          frame++;
+          if (frame < 60) {
+            requestAnimationFrame(draw);
+          }
+        }
+        draw();
+        // Remove confetti after 1 second
+        setTimeout(() => {
+          confettiOverlay.remove();
+        }, 1000);
+      }
+      launchConfetti();
+
+      document.getElementById("close-popup").onclick = () => {
+        popup.remove();
+        const confettiOverlay = document.getElementById("confetti-overlay");
+        if (confettiOverlay) confettiOverlay.remove();
+      };
+    }
+
+    // List of images in the images/emotes folder (include .png and .gif)
+    const images = [
+      "Clueless.png",
+      "COGGERS.gif",
+      "Deadass.png",
+      "duckPls.gif",
+      "JustLikeThis.gif",
+      "LULE.png",
+      "monkaOMEGA.png",
+      "ORAL.gif",
+      "Tomfoolery.png",
+      "VeryBased.gif"
+    ];
+
+    // Shuffle the images array for a random order every time
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+    shuffle(images);
+
+    let currentImageIndex = 0;
+
+    // Set the image source for the current emote
+    document.getElementById("guess-image").src = `images/emotes/${images[currentImageIndex]}`;
+
+    // Update the emote counter display
+    function updateEmoteCounter() {
+      document.getElementById("emote-counter").textContent = `${currentImageIndex + 1}/${images.length}`;
+    }
+    updateEmoteCounter();
+
+    // Add a "Next Emote" button below the guess list
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next Emote";
+    nextBtn.id = "next-btn";
+    nextBtn.style.background = "#0d6efd";
+    nextBtn.style.color = "#fff";
+    nextBtn.style.border = "none";
+    nextBtn.style.padding = "0.6rem 1.5rem";
+    nextBtn.style.fontSize = "1.25rem";
+    nextBtn.style.borderRadius = "6px";
+    nextBtn.style.cursor = "pointer";
+    nextBtn.style.margin = "1rem auto";
+    nextBtn.style.fontWeight = "bold";
+    nextBtn.style.transition = "background-color 0.2s ease";
+    nextBtn.style.maxWidth = "200px";
+    nextBtn.style.zIndex = "2";
+    nextBtn.style.display = "none"; // Hidden by default
+
+    nextBtn.onclick = function() {
+      if (currentImageIndex < images.length - 1) {
+        currentImageIndex++;
+        document.getElementById("guess-image").src = `images/emotes/${images[currentImageIndex]}`;
+        updateEmoteCounter();
+        guesses = [];
+        updateGuessList();
+        resultMessage.textContent = "";
+        emoteInput.value = "";
+        window.correctEmote = images[currentImageIndex].split(".")[0];
+        nextBtn.style.display = "none";
+        document.getElementById("submit-btn").style.display = "block";
+      }
+    };
+
+    // Only append nextBtn ONCE, after the guess list
+    document.body.insertBefore(nextBtn, document.getElementById("guess-list").nextSibling);
+
+    // Update correctEmote for new image
+    window.correctEmote = images[currentImageIndex].split(".")[0];
+  </script>
+</body>
+</html>
